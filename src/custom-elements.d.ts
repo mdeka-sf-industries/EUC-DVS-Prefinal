@@ -1,5 +1,7 @@
 import type React from "react";
 
+declare module "*.module.css";
+
 declare namespace JSX {
   interface IntrinsicElements {
     "elevenlabs-convai": React.DetailedHTMLProps<
