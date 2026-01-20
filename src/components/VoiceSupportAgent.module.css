@@ -1,0 +1,8 @@
+.widget {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  z-index: 20;
+}

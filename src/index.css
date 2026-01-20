@@ -1,0 +1,44 @@
+:root {
+  --brand-primary: #0176d3;
+  --brand-footer: #014486;
+  --surface: #f5f8fc;
+  --surface-raised: #ffffff;
+  --border-subtle: #e3e9f2;
+  --text-primary: #1c2b3a;
+  --text-secondary: #526173;
+  --text-muted: #7b8794;
+  --shadow: 0 10px 30px rgba(1, 27, 61, 0.08);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

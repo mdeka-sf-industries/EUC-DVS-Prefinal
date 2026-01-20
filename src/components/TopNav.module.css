@@ -1,0 +1,76 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  display: block;
+}
+
+
+.links {
+  display: flex;
+  gap: 20px;
+}
+
+.linkButton {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 8px 4px;
+  cursor: pointer;
+}
+
+.linkButton:first-child {
+  color: var(--brand-primary);
+  border-bottom: 2px solid var(--brand-primary);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.greeting {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.iconButton {
+  border: none;
+  background: #eef3fb;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.iconPlaceholder {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: #c9d7eb;
+}
