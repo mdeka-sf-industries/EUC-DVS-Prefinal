@@ -3,9 +3,10 @@ import { Customer } from "../types";
 
 type WelcomePanelProps = {
   customer: Customer;
+  onCtaClick?: () => void;
 };
 
-const WelcomePanel = ({ customer }: WelcomePanelProps) => {
+const WelcomePanel = ({ customer, onCtaClick }: WelcomePanelProps) => {
   return (
     <section className={styles.panel}>
       <div className={styles.content}>
@@ -14,10 +15,16 @@ const WelcomePanel = ({ customer }: WelcomePanelProps) => {
           {customer.name} <span aria-hidden="true">👋</span>
         </h1>
         <p className={styles.subtitle}>
-          Welcome! We are here to help you with your energy and sustainability
-          needs. Pay your bill, set up autopay, investigate energy savings, and
-          more from your dashboard.
+          Welcome! We are here to help you explore solar options, track clean
+          energy usage, and unlock savings on your green energy plan.
         </p>
+        <button
+          className={styles.ctaButton}
+          type="button"
+          onClick={onCtaClick}
+        >
+          Switch to Solar
+        </button>
       </div>
       <div className={styles.heroSpacer} aria-hidden="true" />
     </section>

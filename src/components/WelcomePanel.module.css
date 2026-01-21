@@ -39,6 +39,21 @@
   max-width: 520px;
 }
 
+.ctaButton {
+  align-self: flex-start;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: var(--brand-primary);
+  color: #ffffff;
+}
+
+.ctaButton:hover {
+  filter: brightness(0.95);
+}
+
 .heroSpacer {
   display: none;
 }
