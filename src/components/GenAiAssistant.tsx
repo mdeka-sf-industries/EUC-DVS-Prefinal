@@ -270,9 +270,10 @@ const GenAiAssistant = () => {
       if (flowStep === "ASK_HOUSE_IMAGE") {
         const [first] = files;
         if (first?.url) {
+          const imageUrl = first.url;
           setSolarState((prev) => ({
             ...prev,
-            houseImage: { name: first.name, url: first.url },
+            houseImage: { name: first.name, url: imageUrl },
           }));
         }
         appendMessages(buildUserMessage("Uploaded a house photo.", files));
