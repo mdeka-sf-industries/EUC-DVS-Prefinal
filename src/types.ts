@@ -25,3 +25,19 @@ export type InsightAlert = {
   description: string;
   isActive: boolean;
 };
+
+export type Tariff = {
+  id: string;
+  name: string;
+  price: string;
+  eyebrow?: string;
+  description?: string;
+};
+
+export type SolarSavingsSummary = {
+  panelCount: number;
+  totalCost: number;
+  estimatedMonthlySavings: number;
+  estimatedSavingsPercentage: number;
+  batterySelected: boolean;
+};

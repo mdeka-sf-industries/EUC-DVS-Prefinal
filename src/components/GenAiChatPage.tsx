@@ -1,11 +1,18 @@
+import type { SolarSavingsSummary, Tariff } from "../types";
 import GenAiAssistant from "./GenAiAssistant";
 import styles from "./GenAiChatPage.module.css";
 
 type GenAiChatPageProps = {
   onBack: () => void;
+  onSignUpForTariff: (tariff: Tariff, solarSummary?: SolarSavingsSummary) => void;
+  hasBillContextFromChat?: boolean;
 };
 
-const GenAiChatPage = ({ onBack }: GenAiChatPageProps) => {
+const GenAiChatPage = ({
+  onBack,
+  onSignUpForTariff,
+  hasBillContextFromChat = false,
+}: GenAiChatPageProps) => {
   return (
     <section className={styles.page} aria-labelledby="genai-page-title">
       <div className={styles.inner}>
@@ -25,7 +32,10 @@ const GenAiChatPage = ({ onBack }: GenAiChatPageProps) => {
           </div>
         </header>
         <div className={styles.assistant}>
-          <GenAiAssistant />
+          <GenAiAssistant
+            onSignUpForTariff={onSignUpForTariff}
+            hasBillContextFromChat={hasBillContextFromChat}
+          />
         </div>
       </div>
     </section>

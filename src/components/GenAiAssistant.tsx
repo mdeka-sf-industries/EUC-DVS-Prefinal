@@ -1,5 +1,33 @@
 import { useMemo, useState } from "react";
+import type { SolarSavingsSummary, Tariff } from "../types";
 import styles from "./GenAiAssistant.module.css";
+
+const TARIFFS: Tariff[] = [
+  {
+    id: "solar-saver",
+    name: "Solar Saver Tariff",
+    price: "$89 / month",
+    eyebrow: "Best for stability",
+    description:
+      "Predictable rates with net metering credits for excess energy.",
+  },
+  {
+    id: "peak-smart",
+    name: "Peak Smart Solar",
+    price: "$109 / month",
+    eyebrow: "Time-of-use",
+    description:
+      "Higher export credits during peak hours to maximize savings.",
+  },
+  {
+    id: "solar-storage",
+    name: "Solar + Storage Bundle",
+    price: "$129 / month",
+    eyebrow: "Backup ready",
+    description:
+      "Pair solar with battery storage for resilience and savings.",
+  },
+];
 
 type ChatMessage = {
   id: string;
@@ -74,7 +102,18 @@ const formatCurrency = (value: number) =>
 
 const getReplyDelay = () => 600 + Math.floor(Math.random() * 500);
 
-const GenAiAssistant = () => {
+type GenAiAssistantProps = {
+  onSignUpForTariff?: (
+    tariff: Tariff,
+    solarSummary?: SolarSavingsSummary
+  ) => void;
+  hasBillContextFromChat?: boolean;
+};
+
+const GenAiAssistant = ({
+  onSignUpForTariff,
+  hasBillContextFromChat = false,
+}: GenAiAssistantProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [flowStep, setFlowStep] = useState<FlowStep>("IDLE");
@@ -145,11 +184,19 @@ const GenAiAssistant = () => {
     appendMessages(
       buildUserMessage("Estimate my solar savings based on my monthly usage.")
     );
-    await runAssistantSequence([
-      buildAssistantMessage(
-        "Upload a photo of your home so I can estimate usable roof space for solar panels."
-      ),
-    ]);
+    if (hasBillContextFromChat) {
+      await runAssistantSequence([
+        buildAssistantMessage(
+          "Based on the bill you shared earlier, we have an estimated annual usage of about 6,240 kWh. I'll use that for your savings estimate.\n\nUpload a photo of your home so I can estimate usable roof space for solar panels."
+        ),
+      ]);
+    } else {
+      await runAssistantSequence([
+        buildAssistantMessage(
+          "Upload a photo of your home so I can estimate usable roof space for solar panels."
+        ),
+      ]);
+    }
     setFlowStep("ASK_HOUSE_IMAGE");
   };
 
@@ -331,39 +378,19 @@ const GenAiAssistant = () => {
       <div className={styles.messageRow}>
         <div className={styles.messageContent}>
           <div className={styles.tariffGrid}>
-            <article className={styles.tariffCard}>
-              <p className={styles.cardEyebrow}>Best for stability</p>
-              <h3 className={styles.cardTitle}>Solar Saver Tariff</h3>
-              <p className={styles.cardPrice}>$89 / month</p>
-              <p className={styles.cardMeta}>
-                Predictable rates with net metering credits for excess energy.
-              </p>
-              <button className={styles.cardButton} type="button">
-                View details
-              </button>
-            </article>
-            <article className={styles.tariffCard}>
-              <p className={styles.cardEyebrow}>Time-of-use</p>
-              <h3 className={styles.cardTitle}>Peak Smart Solar</h3>
-              <p className={styles.cardPrice}>$109 / month</p>
-              <p className={styles.cardMeta}>
-                Higher export credits during peak hours to maximize savings.
-              </p>
-              <button className={styles.cardButton} type="button">
-                View details
-              </button>
-            </article>
-            <article className={styles.tariffCard}>
-              <p className={styles.cardEyebrow}>Backup ready</p>
-              <h3 className={styles.cardTitle}>Solar + Storage Bundle</h3>
-              <p className={styles.cardPrice}>$129 / month</p>
-              <p className={styles.cardMeta}>
-                Pair solar with battery storage for resilience and savings.
-              </p>
-              <button className={styles.cardButton} type="button">
-                View details
-              </button>
-            </article>
+            {TARIFFS.map((tariff) => (
+              <article key={tariff.id} className={styles.tariffCard}>
+                <p className={styles.cardEyebrow}>{tariff.eyebrow}</p>
+                <h3 className={styles.cardTitle}>{tariff.name}</h3>
+                <p className={styles.cardPrice}>{tariff.price}</p>
+                <p className={styles.cardMeta}>{tariff.description}</p>
+                <div className={styles.cardButtonRow}>
+                  <button className={styles.cardButton} type="button">
+                    View details
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </div>
@@ -445,9 +472,18 @@ const GenAiAssistant = () => {
                         ? "Battery included for steadier savings."
                         : "No battery added."}
                     </div>
-                    <button className={styles.summaryButton} type="button">
-                      View details
-                    </button>
+                    <div className={styles.summaryButtonRow}>
+                      <button
+                        className={styles.summaryButtonPrimary}
+                        type="button"
+                        onClick={() =>
+                          onSignUpForTariff?.(TARIFFS[0], message.summary)
+                        }
+                        data-summary-cta
+                      >
+                        Sign up for solar
+                      </button>
+                    </div>
                   </div>
                 )}
                 {!message.typing && message.options && message.options.length > 0 && (

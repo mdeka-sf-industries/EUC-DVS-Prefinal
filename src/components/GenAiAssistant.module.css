@@ -79,8 +79,15 @@
   margin: 0;
 }
 
-.cardButton {
+.cardButtonRow {
   margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cardButton {
   border: none;
   background: rgba(1, 118, 211, 0.12);
   color: var(--brand-primary);
@@ -88,13 +95,28 @@
   padding: 8px 14px;
   border-radius: 999px;
   cursor: pointer;
-  align-self: flex-start;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
 .cardButton:hover {
   background: var(--brand-primary);
   color: #ffffff;
+}
+
+.cardButtonPrimary {
+  border: none;
+  background: var(--brand-primary);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cardButtonPrimary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .quickActions {
@@ -370,6 +392,9 @@
   margin-top: 12px;
   border: 1px solid rgba(47, 36, 88, 0.1);
   box-shadow: 0 12px 24px rgba(36, 26, 96, 0.08);
+  width: 100%;
+  min-width: 280px;
+  box-sizing: border-box;
 }
 
 .summaryHeader {
@@ -402,8 +427,16 @@
   color: #6a6f88;
 }
 
-.summaryButton {
+.summaryButtonRow {
   margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.summaryButton {
   border: none;
   background: rgba(1, 118, 211, 0.12);
   color: var(--brand-primary);
@@ -416,6 +449,22 @@
 .summaryButton:hover {
   background: var(--brand-primary);
   color: #ffffff;
+}
+
+.summaryButtonPrimary {
+  border: none;
+  background: var(--brand-primary);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.summaryButtonPrimary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .srOnly {

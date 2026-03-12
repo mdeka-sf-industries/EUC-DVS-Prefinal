@@ -1,44 +1,62 @@
 import { useState } from "react";
 import styles from "./App.module.css";
-import { customer, insights, quickActions, usageSummary } from "./data/mockData";
+import { customer } from "./data/mockData";
+import type { Tariff, SolarSavingsSummary } from "./types";
 import TopNav from "./components/TopNav";
-import WelcomePanel from "./components/WelcomePanel";
-import UsageSummary from "./components/UsageSummary";
-import QuickActions from "./components/QuickActions";
-import InsightsAlerts from "./components/InsightsAlerts";
+import NewCustomerHome from "./components/NewCustomerHome";
 import GenAiChatPage from "./components/GenAiChatPage";
+import EnrollmentPage from "./components/EnrollmentPage";
 import Footer from "./components/Footer";
 
 const App = () => {
-  const [activeView, setActiveView] = useState<"dashboard" | "genai">(
+  const [activeView, setActiveView] = useState<"dashboard" | "genai" | "enrollment">(
     "dashboard"
   );
-  const activeInsights = insights.filter((insight) => insight.isActive);
+  const [solarConciergeFromChatWithBill, setSolarConciergeFromChatWithBill] =
+    useState(false);
+  const [selectedTariff, setSelectedTariff] = useState<Tariff | null>(null);
+  const [selectedSolarSummary, setSelectedSolarSummary] =
+    useState<SolarSavingsSummary | null>(null);
+
+  const handleSignUpForTariff = (
+    tariff: Tariff,
+    solarSummary?: SolarSavingsSummary
+  ) => {
+    setSelectedTariff(tariff);
+    setSelectedSolarSummary(solarSummary ?? null);
+    setActiveView("enrollment");
+  };
+
+  const handleEnrollmentBack = () => {
+    setSelectedTariff(null);
+    setSelectedSolarSummary(null);
+    setActiveView("genai");
+  };
 
   return (
     <div className={styles.page}>
-      <TopNav customer={customer} />
+      <TopNav customer={activeView === "dashboard" ? null : customer} />
       <div className={styles.content}>
         <main className={styles.main}>
           {activeView === "dashboard" ? (
-            <>
-              <WelcomePanel
-                customer={customer}
-                onCtaClick={() => setActiveView("genai")}
-              />
-              <div className={styles.mainGrid}>
-                <UsageSummary
-                  usage={usageSummary}
-                  accountId={customer.accountId}
-                />
-                <div className={styles.sideColumn}>
-                  <InsightsAlerts insights={activeInsights} />
-                  <QuickActions actions={quickActions} />
-                </div>
-              </div>
-            </>
+            <NewCustomerHome
+              onExploreSolar={({ fromChatWithBill } = {}) => {
+                setSolarConciergeFromChatWithBill(!!fromChatWithBill);
+                setActiveView("genai");
+              }}
+            />
+          ) : activeView === "enrollment" && selectedTariff ? (
+            <EnrollmentPage
+              tariff={selectedTariff}
+              solarSummary={selectedSolarSummary}
+              onBack={handleEnrollmentBack}
+            />
           ) : (
-            <GenAiChatPage onBack={() => setActiveView("dashboard")} />
+            <GenAiChatPage
+              onBack={() => setActiveView("dashboard")}
+              onSignUpForTariff={handleSignUpForTariff}
+              hasBillContextFromChat={solarConciergeFromChatWithBill}
+            />
           )}
         </main>
       </div>

@@ -1,0 +1,372 @@
+.page {
+  width: 100%;
+  padding: 48px 0 88px;
+  background: radial-gradient(
+      circle at top,
+      rgba(115, 196, 255, 0.35),
+      transparent 55%
+    ),
+    linear-gradient(120deg, #f6f2ff 0%, #eef6ff 55%, #f7fbff 100%);
+  min-height: calc(100vh - 120px);
+}
+
+.inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.backButton {
+  align-self: flex-start;
+  border: 1px solid rgba(92, 84, 163, 0.4);
+  border-radius: 999px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #3b2f6b;
+  cursor: pointer;
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(92, 84, 163, 0.6);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+  align-items: center;
+}
+
+.kicker {
+  color: #4d4f66;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2f2458;
+  margin: 0;
+}
+
+.subtitle {
+  color: #5a5d78;
+  line-height: 1.6;
+  font-size: 15px;
+  margin: 0;
+}
+
+.tariffBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  border: 1px solid rgba(47, 36, 88, 0.1);
+  box-shadow: 0 8px 20px rgba(36, 26, 96, 0.06);
+  align-self: flex-start;
+}
+
+.tariffName {
+  font-weight: 600;
+  color: #2f2458;
+}
+
+.tariffPrice {
+  font-size: 14px;
+  color: #0176d3;
+  font-weight: 600;
+}
+
+.solarSummaryCard {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 16px 20px;
+  border: 1px solid rgba(47, 36, 88, 0.1);
+  box-shadow: 0 12px 24px rgba(36, 26, 96, 0.08);
+}
+
+.solarSummaryTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2f2458;
+  margin: 0 0 12px 0;
+}
+
+.solarSummaryBody {
+  display: grid;
+  gap: 8px;
+}
+
+.solarSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #4a4f65;
+  font-size: 15px;
+}
+
+.solarSummaryRow strong {
+  color: #2f2458;
+  font-size: 16px;
+}
+
+.solarSummaryFooter {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #6a6f88;
+}
+
+.uploadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2f2458;
+  margin: 0;
+}
+
+.uploadGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 560px) {
+  .uploadGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.uploadCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px dashed rgba(47, 36, 88, 0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.uploadCard:hover:not(:has(.fileInput:disabled)) {
+  border-color: var(--brand-primary);
+  background: rgba(1, 118, 211, 0.04);
+}
+
+.uploadLabel {
+  font-weight: 600;
+  color: #2f2458;
+  font-size: 15px;
+}
+
+.uploadHint {
+  font-size: 13px;
+  color: #6a6f88;
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.uploadCta {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+
+.fileName {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #4a4f65;
+  word-break: break-all;
+}
+
+.extractButton {
+  align-self: flex-start;
+  border: none;
+  background: var(--brand-primary);
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.extractButton:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.processing {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: rgba(1, 118, 211, 0.08);
+  border-radius: 14px;
+  border: 1px solid rgba(1, 118, 211, 0.2);
+}
+
+.processing p {
+  margin: 0;
+  font-size: 14px;
+  color: #2f2458;
+  font-weight: 500;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(1, 118, 211, 0.3);
+  border-top-color: var(--brand-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.prefillNote {
+  font-size: 14px;
+  color: #6a6f88;
+  margin: 0;
+}
+
+.formGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a4f65;
+}
+
+.input {
+  padding: 12px 14px;
+  border: 1px solid rgba(47, 36, 88, 0.15);
+  border-radius: 10px;
+  font-size: 15px;
+  color: #2f2458;
+  background: #fff;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.15);
+}
+
+.formActions {
+  margin-top: 8px;
+}
+
+.primaryButton {
+  border: none;
+  background: var(--brand-primary);
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Success state */
+.successCard {
+  text-align: center;
+  padding: 48px 32px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  border: 1px solid rgba(47, 36, 88, 0.08);
+  box-shadow: 0 16px 40px rgba(36, 26, 96, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.successIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0, 180, 120, 0.15);
+  color: #00b478;
+  font-size: 32px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.successTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2f2458;
+  margin: 0;
+}
+
+.successMessage {
+  font-size: 15px;
+  color: #5a5d78;
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0;
+}
+
+.successCard .primaryButton {
+  margin-top: 8px;
+}
