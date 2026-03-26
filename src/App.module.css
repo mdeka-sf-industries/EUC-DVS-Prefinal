@@ -1,22 +1,156 @@
 .page {
   min-height: 100vh;
-  background: var(--surface);
+  background:
+    radial-gradient(circle at top, rgba(1, 118, 211, 0.12), transparent 30%),
+    linear-gradient(180deg, #f2f4f8 0%, #eef1f6 100%);
   color: var(--text-primary);
   display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.deviceFrame {
+  position: relative;
+  width: 402px;
+  height: 874px;
+  padding: 12px;
+  border-radius: 34px;
+  background: linear-gradient(180deg, #191b1f 0%, #050607 100%);
+  box-shadow:
+    0 40px 90px rgba(14, 19, 28, 0.32),
+    0 12px 24px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.03);
+}
+
+.deviceFrame::before,
+.deviceFrame::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  width: 4px;
+  background: #22252a;
+  border-radius: 12px;
+}
+
+.deviceFrame::before {
+  top: 150px;
+  height: 84px;
+}
+
+.deviceFrame::after {
+  top: 248px;
+  height: 84px;
+}
+
+.deviceScreen {
+  --page-padding: 24px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.deviceScreen::after {
+  content: none;
+}
+
+.deviceScreen::before {
+  content: none;
+}
+
+.deviceTopChrome {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.deviceNotch {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #262a30 0%, #111317 45%, #050608 100%);
+  box-shadow:
+    0 0 0 3px rgba(5, 6, 8, 0.92),
+    0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.statusBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.statusBarImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.deviceFloatingRoot {
+  position: absolute;
+  inset: 32px 0 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.deviceFloatingRoot > * {
+  pointer-events: auto;
+}
+
+.deviceViewport {
+  height: calc(100% - 32px);
+  margin-top: 32px;
+  padding-bottom: 0;
+  display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--surface);
+  scrollbar-width: none;
+}
+
+.deviceViewport::-webkit-scrollbar {
+  display: none;
 }
 
 .content {
-  padding: 24px 32px 40px;
-  max-width: 1280px;
+  padding: 0 0 40px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .main {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--section-gap);
+  padding-top: 0;
+  flex: 1;
 }
 
 .mainGrid {
@@ -35,6 +169,16 @@
 @media (max-width: 1080px) {
   .mainGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding-bottom: 28px;
+  }
+
+  .main {
+    padding-top: 0;
   }
 }
 

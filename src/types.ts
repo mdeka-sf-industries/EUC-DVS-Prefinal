@@ -39,5 +39,10 @@ export type SolarSavingsSummary = {
   totalCost: number;
   estimatedMonthlySavings: number;
   estimatedSavingsPercentage: number;
+  costWithoutSolar: number;
+  costWithSolar: number;
+  lifetimeSavings: number;
+  breakEvenYear: number;
+  breakEvenYears: number;
   batterySelected: boolean;
 };

@@ -10,6 +10,9 @@
   --shadow: 0 10px 30px rgba(1, 27, 61, 0.08);
   --radius-lg: 18px;
   --radius-md: 12px;
+  --page-max-width: 1280px;
+  --page-padding: clamp(16px, 3vw, 32px);
+  --section-gap: clamp(20px, 3vw, 32px);
 }
 
 *,
@@ -24,10 +27,18 @@ body {
     "Segoe UI", sans-serif;
   background: var(--surface);
   color: var(--text-primary);
+  overflow-x: hidden;
 }
 
 button {
   font-family: inherit;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
 }
 
 h1,
@@ -41,4 +52,12 @@ p {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+}
+
+#root {
+  min-height: 100vh;
 }

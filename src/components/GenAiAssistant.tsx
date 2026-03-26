@@ -1,15 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SolarSavingsSummary, Tariff } from "../types";
 import styles from "./GenAiAssistant.module.css";
 
 const TARIFFS: Tariff[] = [
   {
-    id: "solar-saver",
-    name: "Solar Saver Tariff",
+    id: "solar-boost",
+    name: "Kenton Solar Boost",
     price: "$89 / month",
-    eyebrow: "Best for stability",
-    description:
-      "Predictable rates with net metering credits for excess energy.",
+    eyebrow: "Recommended solar plan",
+    description: "Up to 8c/kWh solar FIT",
   },
   {
     id: "peak-smart",
@@ -35,13 +34,7 @@ type ChatMessage = {
   content: string;
   attachments?: { name: string; url?: string; type?: string }[];
   options?: string[];
-  summary?: {
-    panelCount: number;
-    totalCost: number;
-    estimatedMonthlySavings: number;
-    estimatedSavingsPercentage: number;
-    batterySelected: boolean;
-  };
+  summary?: SolarSavingsSummary;
   typing?: boolean;
 };
 
@@ -61,17 +54,27 @@ type SolarEstimatorState = {
   totalCost?: number;
   estimatedMonthlySavings?: number;
   estimatedSavingsPercentage?: number;
+  costWithoutSolar?: number;
+  costWithSolar?: number;
+  lifetimeSavings?: number;
+  breakEvenYear?: number;
+  breakEvenYears?: number;
 };
 
 const SOLAR_CONSTANTS = {
   roofUtilization: 0.7,
   panelAreaSqM: 1.8,
   sqftToSqm: 0.092903,
-  baseSystemCost: 13101,
-  batteryCost: 3800,
-  monthlySavingsRange: [94, 115],
-  savingsPercentRange: [120, 146],
+  baseSystemCost: 8900,
+  batteryCost: 2600,
+  monthlySavingsRange: [62, 78],
+  savingsPercentRange: [42, 58],
+  twentyYearCostWithoutSolar: 38305.29,
+  operatingCostWithSolarBase: 15869.35,
+  breakEvenYears: 7,
+  breakEvenYearsWithBattery: 9,
 };
+const SOLAR_LAYOUT_PREVIEW_SRC = "/solar-panel-layout-preview.png";
 
 const estimatePanelCount = (squareFeet: number) => {
   const roofSqm = squareFeet * SOLAR_CONSTANTS.sqftToSqm;
@@ -89,15 +92,37 @@ const estimateTotals = (batterySelected: boolean) => {
   const estimatedSavingsPercentage = batterySelected
     ? SOLAR_CONSTANTS.savingsPercentRange[1]
     : SOLAR_CONSTANTS.savingsPercentRange[0];
+  const costWithoutSolar = SOLAR_CONSTANTS.twentyYearCostWithoutSolar;
+  const costWithSolar = SOLAR_CONSTANTS.operatingCostWithSolarBase + totalCost;
+  const breakEvenYears = batterySelected
+    ? SOLAR_CONSTANTS.breakEvenYearsWithBattery
+    : SOLAR_CONSTANTS.breakEvenYears;
 
-  return { totalCost, estimatedMonthlySavings, estimatedSavingsPercentage };
+  return {
+    totalCost,
+    estimatedMonthlySavings,
+    estimatedSavingsPercentage,
+    costWithoutSolar,
+    costWithSolar,
+    lifetimeSavings: costWithoutSolar - costWithSolar,
+    breakEvenYear: new Date().getFullYear() + breakEvenYears,
+    breakEvenYears,
+  };
 };
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-GB", {
+  new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "GBP",
+    currency: "USD",
     maximumFractionDigits: 0,
+  }).format(value);
+
+const formatCurrencyDetailed = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value);
 
 const getReplyDelay = () => 600 + Math.floor(Math.random() * 500);
@@ -108,11 +133,15 @@ type GenAiAssistantProps = {
     solarSummary?: SolarSavingsSummary
   ) => void;
   hasBillContextFromChat?: boolean;
+  compact?: boolean;
+  autoStartOnMount?: boolean;
 };
 
 const GenAiAssistant = ({
   onSignUpForTariff,
   hasBillContextFromChat = false,
+  compact = false,
+  autoStartOnMount = false,
 }: GenAiAssistantProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -121,6 +150,8 @@ const GenAiAssistant = ({
     estimatedRoofUtilization: SOLAR_CONSTANTS.roofUtilization,
     batterySelected: false,
   });
+  const didAutoStartRef = useRef(false);
+  const visibleTariffs = compact ? [TARIFFS[0]] : TARIFFS;
 
   const canSend = useMemo(() => inputValue.trim().length > 0, [inputValue]);
 
@@ -202,7 +233,16 @@ const GenAiAssistant = ({
 
   const handleBatteryChoice = async (choice: "ADD" | "SKIP") => {
     const batterySelected = choice === "ADD";
-    const { totalCost, estimatedMonthlySavings, estimatedSavingsPercentage } =
+    const {
+      totalCost,
+      estimatedMonthlySavings,
+      estimatedSavingsPercentage,
+      costWithoutSolar,
+      costWithSolar,
+      lifetimeSavings,
+      breakEvenYear,
+      breakEvenYears,
+    } =
       estimateTotals(batterySelected);
     const updatedState = {
       ...solarState,
@@ -210,6 +250,11 @@ const GenAiAssistant = ({
       totalCost,
       estimatedMonthlySavings,
       estimatedSavingsPercentage,
+      costWithoutSolar,
+      costWithSolar,
+      lifetimeSavings,
+      breakEvenYear,
+      breakEvenYears,
     };
 
     setSolarState(updatedState);
@@ -228,6 +273,11 @@ const GenAiAssistant = ({
           totalCost,
           estimatedMonthlySavings: estimatedMonthlySavings ?? 0,
           estimatedSavingsPercentage: estimatedSavingsPercentage ?? 0,
+          costWithoutSolar: costWithoutSolar ?? 0,
+          costWithSolar: costWithSolar ?? 0,
+          lifetimeSavings: lifetimeSavings ?? 0,
+          breakEvenYear: breakEvenYear ?? new Date().getFullYear(),
+          breakEvenYears: breakEvenYears ?? 0,
           batterySelected,
         }
       ),
@@ -252,7 +302,16 @@ const GenAiAssistant = ({
       }
 
       const panelCount = estimatePanelCount(numericValue);
-      const { totalCost, estimatedMonthlySavings, estimatedSavingsPercentage } =
+      const {
+        totalCost,
+        estimatedMonthlySavings,
+        estimatedSavingsPercentage,
+        costWithoutSolar,
+        costWithSolar,
+        lifetimeSavings,
+        breakEvenYear,
+        breakEvenYears,
+      } =
         estimateTotals(false);
 
       setSolarState((prev) => ({
@@ -262,21 +321,45 @@ const GenAiAssistant = ({
         totalCost,
         estimatedMonthlySavings,
         estimatedSavingsPercentage,
+        costWithoutSolar,
+        costWithSolar,
+        lifetimeSavings,
+        breakEvenYear,
+        breakEvenYears,
       }));
+
+      const summary: SolarSavingsSummary = {
+        panelCount,
+        totalCost,
+        estimatedMonthlySavings,
+        estimatedSavingsPercentage,
+        costWithoutSolar,
+        costWithSolar,
+        lifetimeSavings,
+        breakEvenYear,
+        breakEvenYears,
+        batterySelected: false,
+      };
 
       appendMessages(buildUserMessage(trimmed));
       await runAssistantSequence([
         buildAssistantMessage(
-          `Based on ${numericValue.toLocaleString()} sq ft, you’re estimated for ~${panelCount} panels. Total system cost ${formatCurrency(
-            totalCost
+          `Based on ${numericValue.toLocaleString()} sq ft, you’re estimated for ~${summary.panelCount} panels. Total system cost ${formatCurrency(
+            summary.totalCost
           )}. Monthly savings ${formatCurrency(
-            estimatedMonthlySavings ?? 0
-          )} (~${estimatedSavingsPercentage}% of your bill).`
+            summary.estimatedMonthlySavings
+          )} (~${summary.estimatedSavingsPercentage}% of your bill).`
         ),
         buildAssistantMessage(
-          "Here’s a sample panel layout preview.",
+          "Here’s an optimized panel layout for the best result on your roof.",
           undefined,
-          [{ name: "panel-house", url: "/panel-house.png", type: "image/png" }]
+          [
+            {
+              name: "solar-layout-preview",
+              url: SOLAR_LAYOUT_PREVIEW_SRC,
+              type: "image/png",
+            },
+          ]
         ),
         buildAssistantMessage(
           "A battery can store excess solar for evening use and improve savings stability. Want to add a battery?",
@@ -343,6 +426,26 @@ const GenAiAssistant = ({
     event.target.value = "";
   };
 
+  const handleTariffQuickAction = async () => {
+    appendMessages(buildUserMessage("Show me the recommended solar tariff."));
+    await runAssistantSequence([
+      buildAssistantMessage(
+        `${TARIFFS[0].name} is the best fit for this enquiry. It starts at ${TARIFFS[0].price} and is designed for stable ongoing savings with net metering credits.`
+      ),
+    ]);
+  };
+
+  const handleRoofEligibilityQuickAction = async () => {
+    setFlowStep("ASK_HOUSE_IMAGE");
+    appendMessages(
+      buildUserMessage("Check my roof eligibility for solar."),
+      buildAssistantMessage(
+        "To check roof eligibility, upload a photo of your house or choose a roof type.",
+        ["Flat roof", "Sloped roof", "Not sure"]
+      )
+    );
+  };
+
   const handleOptionSelect = async (option: string) => {
     if (flowStep === "ASK_BATTERY") {
       if (option === "Add battery") {
@@ -373,13 +476,29 @@ const GenAiAssistant = ({
       ),
     ]);
   };
+
+  useEffect(() => {
+    if (!autoStartOnMount || didAutoStartRef.current) {
+      return;
+    }
+
+    didAutoStartRef.current = true;
+    void startSolarSavingsFlow();
+  }, [autoStartOnMount]);
+
   return (
-    <section className={styles.panel} aria-labelledby="genai-title">
-      <div className={styles.messageRow}>
+    <section
+      className={compact ? `${styles.panel} ${styles.panelCompact}` : styles.panel}
+      aria-labelledby="genai-title"
+    >
+      <div className={compact ? `${styles.messageRow} ${styles.messageRowCompact}` : styles.messageRow}>
         <div className={styles.messageContent}>
-          <div className={styles.tariffGrid}>
-            {TARIFFS.map((tariff) => (
-              <article key={tariff.id} className={styles.tariffCard}>
+          <div className={compact ? `${styles.tariffGrid} ${styles.tariffGridCompact}` : styles.tariffGrid}>
+            {visibleTariffs.map((tariff) => (
+              <article
+                key={tariff.id}
+                className={compact ? `${styles.tariffCard} ${styles.tariffCardCompact}` : styles.tariffCard}
+              >
                 <p className={styles.cardEyebrow}>{tariff.eyebrow}</p>
                 <h3 className={styles.cardTitle}>{tariff.name}</h3>
                 <p className={styles.cardPrice}>{tariff.price}</p>
@@ -394,6 +513,38 @@ const GenAiAssistant = ({
           </div>
         </div>
       </div>
+
+      {(compact || messages.length === 0) && (
+        <div className={compact ? `${styles.quickActions} ${styles.quickActionsCompact}` : styles.quickActions}>
+          <button
+            className={styles.quickChip}
+            type="button"
+            onClick={() => {
+              void handleTariffQuickAction();
+            }}
+          >
+            Recommended solar plan
+          </button>
+          <button
+            className={`${styles.quickChip} ${styles.quickChipSavings}`}
+            type="button"
+            onClick={() => {
+              void startSolarSavingsFlow();
+            }}
+          >
+            Estimate solar savings
+          </button>
+          <button
+            className={`${styles.quickChip} ${styles.quickChipRoof}`}
+            type="button"
+            onClick={() => {
+              void handleRoofEligibilityQuickAction();
+            }}
+          >
+            Check roof eligibility
+          </button>
+        </div>
+      )}
 
       {messages.length > 0 && (
         <div className={styles.chatStream} aria-live="polite">
@@ -444,9 +595,7 @@ const GenAiAssistant = ({
                 )}
                 {!message.typing && message.summary && (
                   <div className={styles.summaryCard}>
-                    <div className={styles.summaryHeader}>
-                      Solar Savings Summary
-                    </div>
+                    <div className={styles.summaryHeader}>Solar Savings Summary</div>
                     <div className={styles.summaryBody}>
                       <div className={styles.summaryRow}>
                         <span>Panels estimated</span>
@@ -465,6 +614,24 @@ const GenAiAssistant = ({
                       <div className={styles.summaryRow}>
                         <span>Bill savings</span>
                         <strong>~{message.summary.estimatedSavingsPercentage}%</strong>
+                      </div>
+                      <div className={styles.summaryRow}>
+                        <span>20-year cost without solar</span>
+                        <strong>{formatCurrencyDetailed(message.summary.costWithoutSolar)}</strong>
+                      </div>
+                      <div className={styles.summaryRow}>
+                        <span>20-year cost with solar</span>
+                        <strong>{formatCurrencyDetailed(message.summary.costWithSolar)}</strong>
+                      </div>
+                      <div className={styles.summaryRow}>
+                        <span>20-year savings</span>
+                        <strong>{formatCurrencyDetailed(message.summary.lifetimeSavings)}</strong>
+                      </div>
+                      <div className={styles.summaryRow}>
+                        <span>Break even</span>
+                        <strong>
+                          {message.summary.breakEvenYear} in {message.summary.breakEvenYears} years
+                        </strong>
                       </div>
                     </div>
                     <div className={styles.summaryFooter}>
@@ -506,43 +673,7 @@ const GenAiAssistant = ({
         </div>
       )}
 
-      {messages.length === 0 && (
-        <div className={styles.quickActions}>
-          <button className={styles.quickChip} type="button">
-            Compare solar tariffs
-          </button>
-          <button
-            className={`${styles.quickChip} ${styles.quickChipSavings}`}
-            type="button"
-            onClick={() => {
-              void startSolarSavingsFlow();
-            }}
-          >
-            Estimate solar savings
-          </button>
-          <button
-            className={`${styles.quickChip} ${styles.quickChipRoof}`}
-            type="button"
-            onClick={() => {
-              setFlowStep("ASK_HOUSE_IMAGE");
-              appendMessages(
-                buildUserMessage("Check my roof eligibility for solar."),
-                buildAssistantMessage(
-                  "To check roof eligibility, upload a photo of your house or choose a roof type.",
-                  ["Flat roof", "Sloped roof", "Not sure"]
-                )
-              );
-            }}
-          >
-            Check roof eligibility
-          </button>
-          <button className={styles.quickChip} type="button">
-            Chat history
-          </button>
-        </div>
-      )}
-
-      <div className={styles.inputDock}>
+      <div className={compact ? `${styles.inputDock} ${styles.inputDockCompact}` : styles.inputDock}>
         <div className={styles.inputShell}>
           <label className={styles.plusButton} aria-label="Upload file">
             +
@@ -578,9 +709,9 @@ const GenAiAssistant = ({
             📶
           </button>
         </div>
-        <div className={styles.inputActions}>
+        <div className={compact ? `${styles.inputActions} ${styles.inputActionsCompact}` : styles.inputActions}>
           <button
-            className={styles.callButton}
+            className={compact ? `${styles.callButton} ${styles.callButtonCompact}` : styles.callButton}
             type="button"
             aria-label="Connect to voice agent"
             title="Connect to voice agent"
@@ -588,7 +719,7 @@ const GenAiAssistant = ({
             📞
           </button>
           <button
-            className={styles.callButton}
+            className={compact ? `${styles.callButton} ${styles.callButtonCompact}` : styles.callButton}
             type="button"
             aria-label="Connect to human agent"
             title="Connect to human agent"
@@ -596,7 +727,7 @@ const GenAiAssistant = ({
             🧑‍💼
           </button>
           <button
-            className={styles.callButton}
+            className={compact ? `${styles.callButton} ${styles.callButtonCompact}` : styles.callButton}
             type="button"
             aria-label="Send"
             onClick={handleSend}

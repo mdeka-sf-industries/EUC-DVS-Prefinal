@@ -1,12 +1,20 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { SolarSavingsSummary, Tariff } from "../types";
 import styles from "./EnrollmentPage.module.css";
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-GB", {
+  new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "GBP",
+    currency: "USD",
     maximumFractionDigits: 0,
+  }).format(value);
+
+const formatCurrencyDetailed = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value);
 
 export type EnrollmentDetails = {
@@ -31,9 +39,10 @@ type EnrollmentPageProps = {
   tariff: Tariff;
   solarSummary?: SolarSavingsSummary | null;
   onBack: () => void;
+  onComplete: () => void;
 };
 
-const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) => {
+const EnrollmentPage = ({ tariff, solarSummary, onBack, onComplete }: EnrollmentPageProps) => {
   const [govIdFile, setGovIdFile] = useState<File | null>(null);
   const [utilityBillFile, setUtilityBillFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -48,6 +57,8 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
   });
   const [submitting, setSubmitting] = useState(false);
   const [signedUp, setSignedUp] = useState(false);
+  const [editingDetails, setEditingDetails] = useState(false);
+  const pageTopRef = useRef<HTMLDivElement | null>(null);
 
   const bothUploaded = govIdFile && utilityBillFile;
 
@@ -57,6 +68,7 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
     setTimeout(() => {
       setDetails(MOCK_EXTRACTED);
       setPrefilled(true);
+      setEditingDetails(false);
       setProcessing(false);
     }, 2200);
   }, []);
@@ -77,8 +89,7 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
     setDetails((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setSubmitting(true);
     // Mock sign-up API call
     await new Promise((r) => setTimeout(r, 1500));
@@ -86,12 +97,29 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
     setSignedUp(true);
   };
 
+  useEffect(() => {
+    if (!prefilled) return;
+
+    const frameId = requestAnimationFrame(() => {
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLElement) {
+        activeElement.blur();
+      }
+      pageTopRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [prefilled]);
+
   if (signedUp) {
     return (
       <section className={styles.page} aria-labelledby="enrollment-success-title">
         <div className={styles.inner}>
-          <button className={styles.backButton} type="button" onClick={onBack}>
-            ← Back to solar concierge
+          <button className={styles.backButton} type="button" onClick={onComplete}>
+            ← Back to Home
           </button>
           <div className={styles.successCard}>
             <div className={styles.successIcon}>✓</div>
@@ -103,8 +131,8 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
               email shortly. Our team will complete verification and your new
               tariff will be active within 3–5 business days.
             </p>
-            <button className={styles.primaryButton} type="button" onClick={onBack}>
-              Return to home
+            <button className={styles.primaryButton} type="button" onClick={onComplete}>
+              Return to Home
             </button>
           </div>
         </div>
@@ -115,8 +143,9 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
   return (
     <section className={styles.page} aria-labelledby="enrollment-title">
       <div className={styles.inner}>
+        <div ref={pageTopRef} />
         <button className={styles.backButton} type="button" onClick={onBack}>
-          ← Back to solar concierge
+          ← Back to Kenton Agent
         </button>
         <header className={styles.header}>
           <p className={styles.kicker}>Tariff enrollment</p>
@@ -155,6 +184,24 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
               <div className={styles.solarSummaryRow}>
                 <span>Bill savings</span>
                 <strong>~{solarSummary.estimatedSavingsPercentage}%</strong>
+              </div>
+              <div className={styles.solarSummaryRow}>
+                <span>20-year cost without solar</span>
+                <strong>{formatCurrencyDetailed(solarSummary.costWithoutSolar)}</strong>
+              </div>
+              <div className={styles.solarSummaryRow}>
+                <span>20-year cost with solar</span>
+                <strong>{formatCurrencyDetailed(solarSummary.costWithSolar)}</strong>
+              </div>
+              <div className={styles.solarSummaryRow}>
+                <span>20-year savings</span>
+                <strong>{formatCurrencyDetailed(solarSummary.lifetimeSavings)}</strong>
+              </div>
+              <div className={styles.solarSummaryRow}>
+                <span>Break even</span>
+                <strong>
+                  {solarSummary.breakEvenYear} in {solarSummary.breakEvenYears} years
+                </strong>
               </div>
             </div>
             <div className={styles.solarSummaryFooter}>
@@ -208,7 +255,7 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
               className={styles.extractButton}
               onClick={runMockOcrAndPalm}
             >
-              Read my documents and fill in my details
+              Auto-fill my details
             </button>
           )}
           {processing && (
@@ -221,86 +268,144 @@ const EnrollmentPage = ({ tariff, solarSummary, onBack }: EnrollmentPageProps) =
 
         {/* Prefilled form */}
         {prefilled && (
-          <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.form}>
             <h2 className={styles.sectionTitle}>Your details</h2>
             <p className={styles.prefillNote}>
               We’ve filled these in from your documents. Review and edit if
               needed, then complete sign-up.
             </p>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => setEditingDetails((prev) => !prev)}
+            >
+              {editingDetails ? "Done editing" : "Edit details"}
+            </button>
             <div className={styles.formGrid}>
-              <label className={styles.field}>
+              <div className={styles.field}>
                 <span className={styles.fieldLabel}>Full name</span>
-                <input
-                  type="text"
-                  value={details.fullName}
-                  onChange={(e) => handleDetailChange("fullName", e.target.value)}
-                  className={styles.input}
-                  required
-                />
-              </label>
-              <label className={styles.field}>
+                {editingDetails ? (
+                  <input
+                    type="text"
+                    name="enrollment_full_name_manual"
+                    value={details.fullName}
+                    onChange={(e) => handleDetailChange("fullName", e.target.value)}
+                    className={styles.input}
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className={styles.inputDisplay}>{details.fullName}</div>
+                )}
+              </div>
+              <div className={styles.field}>
                 <span className={styles.fieldLabel}>Address</span>
-                <input
-                  type="text"
-                  value={details.address}
-                  onChange={(e) => handleDetailChange("address", e.target.value)}
-                  className={styles.input}
-                  required
-                />
-              </label>
-              <label className={styles.field}>
+                {editingDetails ? (
+                  <input
+                    type="text"
+                    name="enrollment_address_manual"
+                    value={details.address}
+                    onChange={(e) => handleDetailChange("address", e.target.value)}
+                    className={styles.input}
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className={styles.inputDisplay}>{details.address}</div>
+                )}
+              </div>
+              <div className={styles.field}>
                 <span className={styles.fieldLabel}>Email</span>
-                <input
-                  type="email"
-                  value={details.email}
-                  onChange={(e) => handleDetailChange("email", e.target.value)}
-                  className={styles.input}
-                  required
-                />
-              </label>
-              <label className={styles.field}>
+                {editingDetails ? (
+                  <input
+                    type="email"
+                    name="enrollment_email_manual"
+                    value={details.email}
+                    onChange={(e) => handleDetailChange("email", e.target.value)}
+                    className={styles.input}
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className={styles.inputDisplay}>{details.email}</div>
+                )}
+              </div>
+              <div className={styles.field}>
                 <span className={styles.fieldLabel}>Phone</span>
-                <input
-                  type="tel"
-                  value={details.phone}
-                  onChange={(e) => handleDetailChange("phone", e.target.value)}
-                  className={styles.input}
-                  required
-                />
-              </label>
-              <label className={styles.field}>
+                {editingDetails ? (
+                  <input
+                    type="tel"
+                    name="enrollment_phone_manual"
+                    value={details.phone}
+                    onChange={(e) => handleDetailChange("phone", e.target.value)}
+                    className={styles.input}
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className={styles.inputDisplay}>{details.phone}</div>
+                )}
+              </div>
+              <div className={styles.field}>
                 <span className={styles.fieldLabel}>Previous supplier</span>
-                <input
-                  type="text"
-                  value={details.previousSupplier}
-                  onChange={(e) =>
-                    handleDetailChange("previousSupplier", e.target.value)
-                  }
-                  className={styles.input}
-                />
-              </label>
-              <label className={styles.field}>
+                {editingDetails ? (
+                  <input
+                    type="text"
+                    name="enrollment_supplier_manual"
+                    value={details.previousSupplier}
+                    onChange={(e) =>
+                      handleDetailChange("previousSupplier", e.target.value)
+                    }
+                    className={styles.input}
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className={styles.inputDisplay}>{details.previousSupplier}</div>
+                )}
+              </div>
+              <div className={styles.field}>
                 <span className={styles.fieldLabel}>Meter number</span>
-                <input
-                  type="text"
-                  value={details.meterNumber}
-                  onChange={(e) =>
-                    handleDetailChange("meterNumber", e.target.value)
-                  }
-                  className={styles.input}
-                />
-              </label>
+                {editingDetails ? (
+                  <input
+                    type="text"
+                    name="enrollment_meter_manual"
+                    value={details.meterNumber}
+                    onChange={(e) =>
+                      handleDetailChange("meterNumber", e.target.value)
+                    }
+                    className={styles.input}
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className={styles.inputDisplay}>{details.meterNumber}</div>
+                )}
+              </div>
             </div>
             <div className={styles.formActions}>
               <button
-                type="submit"
+                type="button"
                 className={styles.primaryButton}
+                onClick={handleSubmit}
                 disabled={submitting}
               >
                 {submitting ? "Signing you up…" : "Complete sign-up"}
               </button>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </section>

@@ -1,6 +1,6 @@
 .page {
   width: 100%;
-  padding: 48px 0 88px;
+  padding: clamp(28px, 5vw, 48px) 0 clamp(48px, 8vw, 88px);
   background: radial-gradient(
       circle at top,
       rgba(115, 196, 255, 0.35),
@@ -11,12 +11,13 @@
 }
 
 .inner {
+  width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 var(--page-padding);
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: clamp(24px, 4vw, 32px);
 }
 
 .backButton {
@@ -53,7 +54,7 @@
 }
 
 .title {
-  font-size: 28px;
+  font-size: clamp(1.875rem, 4vw, 2.5rem);
   font-weight: 700;
   color: #2f2458;
   margin: 0;
@@ -69,6 +70,7 @@
 .tariffBadge {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 12px 20px;
   background: rgba(255, 255, 255, 0.95);
@@ -102,6 +104,7 @@
   font-weight: 700;
   color: #2f2458;
   margin: 0 0 12px 0;
+  text-align: center;
 }
 
 .solarSummaryBody {
@@ -113,6 +116,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   color: #4a4f65;
   font-size: 15px;
 }
@@ -139,6 +143,7 @@
   font-weight: 600;
   color: #2f2458;
   margin: 0;
+  text-align: center;
 }
 
 .uploadGrid {
@@ -157,7 +162,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 20px;
+  padding: clamp(18px, 3vw, 22px);
   background: rgba(255, 255, 255, 0.95);
   border: 2px dashed rgba(47, 36, 88, 0.2);
   border-radius: 16px;
@@ -268,6 +273,23 @@
   margin: 0;
 }
 
+.secondaryButton {
+  align-self: flex-start;
+  border: 1px solid rgba(47, 36, 88, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  color: #2f2458;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(47, 36, 88, 0.24);
+}
+
 .formGrid {
   display: grid;
   gap: 16px;
@@ -292,6 +314,18 @@
   font-size: 15px;
   color: #2f2458;
   background: #fff;
+}
+
+.inputDisplay {
+  padding: 12px 14px;
+  border: 1px solid rgba(47, 36, 88, 0.15);
+  border-radius: 10px;
+  font-size: 15px;
+  color: #2f2458;
+  background: rgba(255, 255, 255, 0.92);
+  line-height: 1.5;
+  min-height: 22px;
+  word-break: break-word;
 }
 
 .input:focus {
@@ -369,4 +403,112 @@
 
 .successCard .primaryButton {
   margin-top: 8px;
+}
+
+:global([data-device-preview="true"]) .header {
+  text-align: center;
+  align-items: center;
+  gap: 6px;
+}
+
+:global([data-device-preview="true"]) .backButton {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+:global([data-device-preview="true"]) .kicker {
+  font-size: 11px;
+}
+
+:global([data-device-preview="true"]) .title {
+  font-size: 1.5rem;
+}
+
+:global([data-device-preview="true"]) .subtitle {
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+:global([data-device-preview="true"]) .inner {
+  max-width: none;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 120px;
+}
+
+:global([data-device-preview="true"]) .backButton,
+:global([data-device-preview="true"]) .secondaryButton,
+:global([data-device-preview="true"]) .extractButton,
+:global([data-device-preview="true"]) .primaryButton {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+:global([data-device-preview="true"]) .tariffBadge {
+  width: 100%;
+}
+
+:global([data-device-preview="true"]) .uploadGrid {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+:global([data-device-preview="true"]) .solarSummaryRow {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+:global([data-device-preview="true"]) .processing {
+  align-items: flex-start;
+}
+
+:global([data-device-preview="true"]) .successCard {
+  padding: 32px 20px;
+}
+
+:global([data-device-preview="true"]) .form {
+  padding-bottom: 40px;
+}
+
+@media (max-width: 640px) {
+  .header {
+    text-align: center;
+    align-items: center;
+  }
+
+  .backButton,
+  .extractButton,
+  .primaryButton {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .tariffBadge {
+    width: 100%;
+  }
+
+  .processing {
+    align-items: flex-start;
+  }
+
+  .successCard {
+    padding: 32px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .uploadGrid {
+    gap: 12px;
+  }
+
+  .solarSummaryRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fieldLabel {
+    font-size: 12px;
+  }
 }
