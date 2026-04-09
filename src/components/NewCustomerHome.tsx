@@ -59,6 +59,10 @@ const PILL_SOLAR_BOOST_ESTIMATE_LATER = "Solar Boost estimate later";
 /** Shown below comparison cards only (Solar Boost / Kenton Saver actions are on the cards). */
 const COMPARISON_FOOTER_OPTIONS = [PILL_EXPLORE_ALL_PLANS] as const;
 
+/** Chat comparison card CTAs — Solar vs Saver; internal `processToken` still uses pill strings for `processReply`. */
+const CHAT_COMPARISON_SOLAR_CTA = "Get savings estimate";
+const CHAT_COMPARISON_SAVER_CTA = PILL_EXPLORE_KENTON_SAVER;
+
 type NewCustomerHomeProps = {
   onSignUpForTariff?: (tariff: Tariff, solarSummary?: SolarSavingsSummary) => void;
   initialConversationState?: AgentConversationState | null;
@@ -527,8 +531,10 @@ function choseSolarBoostEstimate(userText: string, lower: string): boolean {
   const t = userText.trim();
   if (
     t === PILL_GET_SOLAR_BOOST_ESTIMATE ||
+    t === CHAT_COMPARISON_SOLAR_CTA ||
     t === "Continue with Solar Boost" ||
-    t === "View details"
+    t === "View details" ||
+    t === "Details"
   ) {
     return true;
   }
@@ -545,7 +551,8 @@ function choseExploreKentonSaver(userText: string, lower: string): boolean {
   if (
     t === PILL_EXPLORE_KENTON_SAVER ||
     t === "Switch to Kenton Saver" ||
-    t === "Select Kenton Saver"
+    t === "Select Kenton Saver" ||
+    t === "See Saver plan"
   ) {
     return true;
   }
@@ -965,24 +972,13 @@ const NewCustomerHome = ({
           );
         }, 350);
         setTimeout(() => {
-          addAssistantRichMessage(
-            "Here’s an optimized panel layout for the best result on your roof.",
-            setChatMessages,
-            {
-              attachments: [
-                { name: "solar-layout-preview", url: SOLAR_LAYOUT_PREVIEW_SRC },
-              ],
-            }
-          );
-        }, 620);
-        setTimeout(() => {
           addAssistantMessage(
             "A battery can store excess solar for evening use and improve savings stability. Want to add a battery?",
             setChatMessages,
             ["Add battery", "Skip"]
           );
           setChatLoading(false);
-        }, 980);
+        }, 620);
         return;
       }
 
@@ -1003,7 +999,16 @@ const NewCustomerHome = ({
         setChatFlowStep("solar_summary");
         setChatLoading(true);
         setTimeout(() => {
-          addAssistantMessage("Summary ready.", setChatMessages, undefined, undefined, summary);
+          addAssistantRichMessage(
+            "Here’s an optimized panel layout for the best result on your roof.",
+            setChatMessages,
+            {
+              attachments: [
+                { name: "solar-layout-preview", url: SOLAR_LAYOUT_PREVIEW_SRC },
+              ],
+              summary,
+            }
+          );
           setChatLoading(false);
         }, 400);
         return;
@@ -1256,7 +1261,26 @@ const NewCustomerHome = ({
           "Great — I’ll take you through roof confirmation and the detailed savings model next.",
           setChatMessages
         );
-        openSolarConcierge();
+        setChatFlowStep("solar_confirm_pin");
+        setChatLoading(true);
+        setTimeout(() => {
+          addAssistantRichMessage(
+            "Based on the bill you shared earlier, we will calculate savings based on your annual consumption of 6,240 kWh per year.",
+            setChatMessages,
+            {
+              consumptionHighlight: ANNUAL_CONSUMPTION_HIGHLIGHT,
+            }
+          );
+          addAssistantRichMessage(
+            "Please confirm your address using the pinned roof view below so I can estimate usable roof space for solar panels.",
+            setChatMessages,
+            {
+              attachments: [{ name: "roof-pin-preview", url: SOLAR_PIN_PREVIEW_SRC }],
+              options: SOLAR_PIN_CONFIRM_OPTIONS,
+            }
+          );
+          setChatLoading(false);
+        }, 400);
         return;
       }
 
@@ -1273,7 +1297,7 @@ const NewCustomerHome = ({
           setChatLoading(true);
           setTimeout(() => {
             addAssistantMessage(
-              "Great choice for flexibility. Kenton Saver is optimised for nearer-term bills without hardware — a legitimate alternative, not a downgrade. Here’s the plan card; you can revisit Solar Boost whenever your situation shifts.",
+              "Great choice for flexibility. Kenton Saver is optimised for nearer-term bills without hardware. Here’s the plan card — you can revisit Solar Boost anytime.",
               setChatMessages,
               undefined,
               saverPlan
@@ -1281,11 +1305,7 @@ const NewCustomerHome = ({
             addAssistantMessage(
               "What would you like next?",
               setChatMessages,
-              [
-                PILL_SOLAR_BOOST_ESTIMATE_LATER,
-                "Show actual monthly numbers",
-                PILL_EXPLORE_ALL_PLANS,
-              ]
+              [PILL_SOLAR_BOOST_ESTIMATE_LATER, PILL_EXPLORE_ALL_PLANS]
             );
             setChatLoading(false);
           }, 400);
@@ -1312,7 +1332,7 @@ const NewCustomerHome = ({
             setChatMessages
           );
           addAssistantMessage(
-            "Want monthly ballparks, or use **View details** / **Select Kenton Saver** on the comparison cards above?",
+            "Want monthly ballparks, or tap **Get savings estimate** (Solar Boost) or **Explore Kenton Saver** on the cards above?",
             setChatMessages,
             ["Show actual monthly numbers", "What if I move in 2 years?", PILL_EXPLORE_ALL_PLANS]
           );
@@ -1325,7 +1345,7 @@ const NewCustomerHome = ({
         setChatLoading(true);
         setTimeout(() => {
           addAssistantMessage(
-            "Ballpark from your bill context: current trajectory **~$250–320/mo**; Kenton Saver **~$185–215/mo**; Solar Boost all-in (tariff + system) often **~$175–210/mo** once credits apply — finals depend on install and finance. Use the comparison card buttons above to go further, or choose below.",
+            "Ballpark from your bill context: current trajectory **~$250–320/mo**; Kenton Saver **~$185–215/mo**; Solar Boost all-in (tariff + system) often **~$175–210/mo** once credits apply — finals depend on install and finance. Use **Get savings estimate** / **Explore Kenton Saver** on the comparison cards above to go further, or choose below.",
             setChatMessages,
             ["What if I move in 2 years?", PILL_EXPLORE_ALL_PLANS]
           );
@@ -1383,7 +1403,7 @@ const NewCustomerHome = ({
       setChatLoading(true);
       setTimeout(() => {
         addAssistantMessage(
-          "I can show monthly ballparks, explore all plans, or you can use **View details** / **Select Kenton Saver** on the cards above.",
+          "I can show monthly ballparks, explore all plans, or tap **Get savings estimate** / **Explore Kenton Saver** on the comparison cards above.",
           setChatMessages,
           ["Show actual monthly numbers", PILL_EXPLORE_ALL_PLANS]
         );
@@ -1410,7 +1430,7 @@ const NewCustomerHome = ({
 
   const handleComparisonCardAction = (planId: "solar-boost" | "electricity-saver") => {
     const displayLabel =
-      planId === "solar-boost" ? "View details" : "Select Kenton Saver";
+      planId === "solar-boost" ? CHAT_COMPARISON_SOLAR_CTA : CHAT_COMPARISON_SAVER_CTA;
     const processToken =
       planId === "solar-boost"
         ? PILL_GET_SOLAR_BOOST_ESTIMATE
@@ -1982,13 +2002,13 @@ const NewCustomerHome = ({
                                   onClick={() => handleComparisonCardAction(side.planId)}
                                   aria-label={
                                     side.planId === "solar-boost"
-                                      ? "View Solar Boost details and savings estimate"
-                                      : "Select Kenton Saver plan"
+                                      ? `${CHAT_COMPARISON_SOLAR_CTA} — ${side.title}`
+                                      : `${CHAT_COMPARISON_SAVER_CTA} — ${side.title}`
                                   }
                                 >
                                   {side.planId === "solar-boost"
-                                    ? "View details"
-                                    : "Select plan"}
+                                    ? CHAT_COMPARISON_SOLAR_CTA
+                                    : CHAT_COMPARISON_SAVER_CTA}
                                 </button>
                               </div>
                               );
