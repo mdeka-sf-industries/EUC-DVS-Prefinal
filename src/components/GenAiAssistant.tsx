@@ -6,7 +6,7 @@ const TARIFFS: Tariff[] = [
   {
     id: "solar-boost",
     name: "Kenton Solar Boost",
-    price: "$89 / month",
+    price: "$95 / month",
     eyebrow: "Recommended solar plan",
     description: "Up to 8c/kWh solar FIT",
   },
